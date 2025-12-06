@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     // Connect to MongoDB
     const client = await clientPromise;
-    const db = client.db("authSystem");
+    const db = client.db("hubcredo");
     const usersCollection = db.collection<User>("users");
 
     // Check if user already exists

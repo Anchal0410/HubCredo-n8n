@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     }
 
     const client = await clientPromise;
-    const db = client.db("authSystem");
+    const db = client.db("hubcredo");
     const usersCollection = db.collection("users");
 
     const user = await usersCollection.findOne(
