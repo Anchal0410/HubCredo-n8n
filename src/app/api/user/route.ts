@@ -7,16 +7,22 @@ export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get("authorization");
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    // prefer Authorization header, fallback to cookie
+    let token: string | null = null;
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      token = authHeader.substring(7);
+    } else {
+      token = request.cookies.get("auth-token")?.value ?? null;
+    }
+
+    if (!token) {
       return NextResponse.json(
         { success: false, message: "Unauthorized" },
         { status: 401 }
       );
     }
 
-    const token = authHeader.substring(7);
     const payload = verifyToken(token);
-
     if (!payload) {
       return NextResponse.json(
         { success: false, message: "Invalid token" },

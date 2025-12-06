@@ -4,17 +4,34 @@ import { JWTPayload } from "./types";
 const JWT_SECRET = process.env.JWT_SECRET || "";
 
 if (!JWT_SECRET) {
-  throw new Error("JWT_SECRET is not defined");
+  throw new Error("JWT_SECRET is not defined in environment variables");
+}
+
+if (JWT_SECRET.length < 32) {
+  console.warn("WARNING: JWT_SECRET should be at least 32 characters long");
 }
 
 export function generateToken(payload: JWTPayload): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
+  try {
+    return jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
+  } catch (error) {
+    console.error("Error generating token:", error);
+    throw new Error("Failed to generate token");
+  }
 }
 
 export function verifyToken(token: string): JWTPayload | null {
   try {
-    return jwt.verify(token, JWT_SECRET) as JWTPayload;
+    const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
+    return decoded;
   } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      console.log("Token expired:", error.message);
+    } else if (error instanceof jwt.JsonWebTokenError) {
+      console.log("Invalid token:", error.message);
+    } else {
+      console.error("Token verification error:", error);
+    }
     return null;
   }
 }
